@@ -103,6 +103,67 @@ SentinelAPI provides an intuitive, powerful platform that:
 - Quick re-scan functionality for regression testing
 - Filter and search through historical data
 
+### 7. **Real-Time Traffic Monitoring**
+- Live dashboard showing ongoing API scans
+- WebSocket-based real-time updates
+- Active scan progress tracking
+- Concurrent scan monitoring
+- Live vulnerability detection alerts
+- Real-time statistics and metrics
+- Active endpoint status indicators
+- Scan queue management and visualization
+
+---
+
+## 📋 Input/Output Summary
+
+| **Feature** | **Key Inputs** | **Key Outputs** |
+|-------------|----------------|-----------------|
+| **Single Endpoint Scanner** | • API URL<br>• HTTP Method<br>• Headers & Auth<br>• Request Body | • Real-time scan progress<br>• Vulnerability report with severity levels<br>• Remediation recommendations |
+| **Collection Testing** | • Collection file (Postman/Swagger/Insomnia)<br>• Endpoint selection<br>• Auth override | • Batch scan results<br>• Collection-wide security summary<br>• Per-endpoint reports |
+| **OAuth 2.0 Testing** | • Flow type & endpoints<br>• Client credentials<br>• PKCE parameters | • Flow validation results<br>• Token analysis<br>• Security recommendations |
+| **JWT Analysis** | • JWT token<br>• Secret key (optional)<br>• Expected algorithm | • Algorithm security check<br>• Signature validation<br>• Claims inspection<br>• Vulnerability detection |
+| **API Key Testing** | • Key value & name<br>• Location (header/query)<br>• Target endpoint | • Exposure risk assessment<br>• HTTPS validation<br>• Security recommendations |
+| **Basic Auth Testing** | • Username & password<br>• Target endpoint | • Credential strength analysis<br>• HTTPS enforcement check<br>• Security recommendations |
+| **Session Testing** | • Session cookie<br>• Cookie name<br>• Endpoints | • Cookie flags analysis<br>• Session fixation check<br>• Timeout assessment |
+| **Injection Testing** | • Target endpoint<br>• Parameters to test<br>• Injection type | • Detected vulnerabilities<br>• Attack vectors<br>• Remediation examples |
+| **CORS Testing** | • Target endpoint<br>• Origin domains | • Policy analysis<br>• Configuration warnings<br>• Recommendations |
+| **SSL/TLS Testing** | • Target URL<br>• Min TLS version | • Certificate validation<br>• Cipher analysis<br>• Protocol recommendations |
+| **Security Headers** | • Target endpoint<br>• Expected headers | • Missing/misconfigured headers<br>• Impact assessment<br>• Recommendations |
+| **Rate Limiting** | • Target endpoint<br>• Request count & window | • Presence detection<br>• DoS assessment<br>• Configuration recommendations |
+| **Data Exposure** | • Target endpoint<br>• Custom patterns | • Exposed secrets/PII<br>• Risk assessment<br>• Protection recommendations |
+| **Access Control** | • Target endpoint<br>• Valid credentials<br>• Test scenarios | • Authorization bypass detection<br>• Privilege escalation risks<br>• Improvements |
+| **Report Generation** | • Scan ID<br>• Format (PDF/JSON)<br>• Sections to include | • Formatted reports (PDF/JSON)<br>• Shareable links<br>• Code examples |
+| **Scan History** | • Filters (date, severity, type)<br>• Sort options<br>• Comparison selection | • Historical scan list<br>• Trend analysis<br>• Comparison reports |
+| **Real-Time Monitor** | • View selection<br>• Time range<br>• Refresh interval | • Live dashboard<br>• WebSocket updates<br>• Scan queue visualization |
+
+---
+
+## 🏗️ Technology Stack
+
+### **Backend**
+- **Runtime**: Node.js
+- **Framework**: Express.js
+- **Database**: MongoDB (scan results, history, configurations)
+- **Real-time**: Socket.io (WebSocket for live updates)
+- **Authentication**: JWT-based auth for user sessions
+- **API Testing**: Axios for making requests to target APIs
+
+### **Frontend**
+- **Framework**: React
+- **Build Tool**: Vite
+- **Styling**: Vanilla CSS with CSS variables
+- **State Management**: Context API / Zustand
+- **Real-time**: Socket.io-client
+- **Charts**: Chart.js / Recharts (for analytics)
+- **HTTP Client**: Axios
+
+### **DevOps**
+- **Version Control**: Git
+- **Package Manager**: npm
+- **Environment**: dotenv for configuration
+- **Testing**: Jest (backend), Vitest (frontend)
+
 ---
 
 ## 🎨 Design Philosophy
