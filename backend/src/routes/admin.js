@@ -4,6 +4,7 @@ const SecurityConfig = require('../models/SecurityConfig');
 const AdminUser = require('../models/AdminUser');
 const logger = require('../utils/logger');
 const { authenticate, requireRole, requirePermission } = require('../middleware/auth');
+const { updateRateLimitConfig, getRateLimitConfig } = require('../middleware/rateLimit');
 
 const router = express.Router();
 
@@ -175,6 +176,68 @@ router.get('/health', (req, res) => {
     timestamp: new Date().toISOString(),
     service: 'admin-api'
   });
+});
+
+// Get rate limit configuration
+router.get('/rate-limit', requirePermission('view_analytics'), (req, res) => {
+  try {
+    const config = getRateLimitConfig();
+    res.json({
+      success: true,
+      config,
+      timestamp: new Date().toISOString(),
+    });
+  } catch (error) {
+    logger.error(`Error fetching rate limit config: ${error.message}`);
+    res.status(500).json({ 
+      success: false,
+      error: 'Failed to fetch rate limit configuration' 
+    });
+  }
+});
+
+// Update rate limit configuration
+router.put('/rate-limit', requirePermission('manage_config'), async (req, res) => {
+  try {
+    const { windowMs, max, message } = req.body;
+    
+    // Validate input
+    if (windowMs && (windowMs < 1000 || windowMs > 3600000)) {
+      return res.status(400).json({
+        success: false,
+        error: 'windowMs must be between 1000 (1 second) and 3600000 (1 hour)',
+      });
+    }
+    
+    if (max && (max < 1 || max > 10000)) {
+      return res.status(400).json({
+        success: false,
+        error: 'max must be between 1 and 10000',
+      });
+    }
+    
+    const success = await updateRateLimitConfig({ windowMs, max, message });
+    
+    if (success) {
+      logger.info('Rate limit configuration updated via admin API');
+      res.json({
+        success: true,
+        message: 'Rate limit configuration updated successfully',
+        config: getRateLimitConfig(),
+      });
+    } else {
+      res.status(500).json({
+        success: false,
+        error: 'Failed to update rate limit configuration',
+      });
+    }
+  } catch (error) {
+    logger.error(`Error updating rate limit config: ${error.message}`);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to update rate limit configuration',
+    });
+  }
 });
 
 module.exports = router;

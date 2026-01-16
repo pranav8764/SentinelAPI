@@ -16,6 +16,7 @@ const securityMiddleware = require('./middleware/security');
 // Import routes
 const adminRoutes = require('./routes/admin');
 const authRoutes = require('./routes/auth');
+const proxyManagementRoutes = require('./routes/proxy');
 
 const app = express();
 const server = http.createServer(app);
@@ -57,6 +58,19 @@ app.get('/health', (req, res) => {
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/proxy', proxyManagementRoutes);
+
+// Proxy route - forwards requests to target API
+const { createProxy, validateProxyTarget, logProxyRequest } = require('./middleware/proxy');
+const { proxyLimiter } = require('./middleware/rateLimit');
+
+app.use('/proxy',
+  proxyLimiter,
+  validateProxyTarget,
+  securityMiddleware.middleware(),
+  logProxyRequest,
+  createProxy()
+);
 
 // Socket.io connection
 io.on('connection', (socket) => {

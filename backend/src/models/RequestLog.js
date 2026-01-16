@@ -69,6 +69,24 @@ const requestLogSchema = new mongoose.Schema({
   proxyTarget: {
     type: String,
     default: null
+  },
+  proxyInfo: {
+    targetUrl: {
+      type: String,
+      default: null
+    },
+    proxied: {
+      type: Boolean,
+      default: false
+    },
+    responseTime: {
+      type: Number,
+      default: null
+    },
+    statusCode: {
+      type: Number,
+      default: null
+    }
   }
 }, {
   timestamps: true
