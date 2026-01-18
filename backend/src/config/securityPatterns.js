@@ -1,5 +1,5 @@
 // Security patterns for detecting various types of attacks
-const securityPatterns = {
+export const securityPatterns = {
   sqlInjection: [
     {
       pattern: /(\bunion\s+select\b)|(\bdrop\s+table\b)|(\bdelete\s+from\b)|(\binsert\s+into\b)/gi,
@@ -272,7 +272,7 @@ const securityPatterns = {
 };
 
 // Function to check input against all patterns
-function checkForVulnerabilities(input, type = 'all') {
+export function checkForVulnerabilities(input, type = 'all') {
   const vulnerabilities = [];
   
   if (!input || typeof input !== 'string') {
@@ -303,7 +303,7 @@ function checkForVulnerabilities(input, type = 'all') {
 }
 
 // Function to get threat level based on vulnerabilities
-function getThreatLevel(vulnerabilities) {
+export function getThreatLevel(vulnerabilities) {
   if (!vulnerabilities || vulnerabilities.length === 0) {
     return 'low';
   }
@@ -320,9 +320,3 @@ function getThreatLevel(vulnerabilities) {
     return 'low';
   }
 }
-
-module.exports = {
-  securityPatterns,
-  checkForVulnerabilities,
-  getThreatLevel
-};

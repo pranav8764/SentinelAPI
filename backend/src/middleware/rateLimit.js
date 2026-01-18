@@ -3,9 +3,9 @@
  * Protects against DDoS and brute force attacks
  */
 
-const rateLimit = require('express-rate-limit');
-const logger = require('../utils/logger');
-const SecurityConfig = require('../models/SecurityConfig');
+import rateLimit from 'express-rate-limit';
+import logger from '../utils/logger.js';
+import SecurityConfig from '../models/SecurityConfig.js';
 
 /**
  * In-memory store for rate limit configuration
@@ -20,7 +20,7 @@ let rateLimitConfig = {
 /**
  * Load rate limit configuration from database
  */
-const loadRateLimitConfig = async () => {
+export const loadRateLimitConfig = async () => {
   try {
     const config = await SecurityConfig.findOne();
     if (config && config.rateLimit) {
@@ -85,7 +85,7 @@ const skip = async (req) => {
 /**
  * Standard rate limiter for API endpoints
  */
-const apiLimiter = rateLimit({
+export const apiLimiter = rateLimit({
   windowMs: rateLimitConfig.windowMs,
   max: rateLimitConfig.max,
   message: rateLimitConfig.message,
@@ -98,7 +98,7 @@ const apiLimiter = rateLimit({
 /**
  * Strict rate limiter for authentication endpoints
  */
-const authLimiter = rateLimit({
+export const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
   max: 5, // 5 requests per 15 minutes
   message: 'Too many authentication attempts, please try again later',
@@ -122,7 +122,7 @@ const authLimiter = rateLimit({
 /**
  * Lenient rate limiter for proxy requests
  */
-const proxyLimiter = rateLimit({
+export const proxyLimiter = rateLimit({
   windowMs: 60 * 1000, // 1 minute
   max: 200, // 200 requests per minute (more lenient for proxy)
   message: 'Too many proxy requests, please slow down',
@@ -135,7 +135,7 @@ const proxyLimiter = rateLimit({
 /**
  * Very strict rate limiter for scanner endpoints
  */
-const scannerLimiter = rateLimit({
+export const scannerLimiter = rateLimit({
   windowMs: 60 * 1000, // 1 minute
   max: 10, // 10 scans per minute
   message: 'Too many scan requests, please wait before scanning again',
@@ -159,7 +159,7 @@ const scannerLimiter = rateLimit({
 /**
  * Update rate limit configuration
  */
-const updateRateLimitConfig = async (newConfig) => {
+export const updateRateLimitConfig = async (newConfig) => {
   try {
     let config = await SecurityConfig.findOne();
     
@@ -187,16 +187,6 @@ const updateRateLimitConfig = async (newConfig) => {
 /**
  * Get current rate limit configuration
  */
-const getRateLimitConfig = () => {
+export const getRateLimitConfig = () => {
   return rateLimitConfig;
-};
-
-module.exports = {
-  apiLimiter,
-  authLimiter,
-  proxyLimiter,
-  scannerLimiter,
-  updateRateLimitConfig,
-  getRateLimitConfig,
-  loadRateLimitConfig,
 };

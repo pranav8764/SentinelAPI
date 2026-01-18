@@ -3,7 +3,7 @@
  * Defines target API settings and proxy behavior
  */
 
-const proxyConfig = {
+export const proxyConfig = {
   // Default target API (can be overridden per request)
   defaultTarget: process.env.PROXY_TARGET_URL || 'https://jsonplaceholder.typicode.com',
   
@@ -48,7 +48,7 @@ const proxyConfig = {
 /**
  * Validate if target URL is allowed
  */
-const isTargetAllowed = (targetUrl) => {
+export const isTargetAllowed = (targetUrl) => {
   try {
     const url = new URL(targetUrl);
     const hostname = url.hostname;
@@ -71,7 +71,7 @@ const isTargetAllowed = (targetUrl) => {
  * Get target URL from request
  * Priority: Query param > Header > Default
  */
-const getTargetUrl = (req) => {
+export const getTargetUrl = (req) => {
   // Check query parameter
   if (req.query.target) {
     return req.query.target;
@@ -84,10 +84,4 @@ const getTargetUrl = (req) => {
   
   // Return default
   return proxyConfig.defaultTarget;
-};
-
-module.exports = {
-  proxyConfig,
-  isTargetAllowed,
-  getTargetUrl,
 };

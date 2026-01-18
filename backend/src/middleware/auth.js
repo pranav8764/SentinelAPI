@@ -1,12 +1,12 @@
-const jwt = require('jsonwebtoken');
-const AdminUser = require('../models/AdminUser');
-const logger = require('../utils/logger');
+import jwt from 'jsonwebtoken';
+import AdminUser from '../models/AdminUser.js';
+import logger from '../utils/logger.js';
 
-const JWT_SECRET = process.env.JWT_SECRET || 'sentinel-secret-key-change-in-production';
-const JWT_EXPIRE = process.env.JWT_EXPIRE || '7d';
+export const JWT_SECRET = process.env.JWT_SECRET || 'sentinel-secret-key-change-in-production';
+export const JWT_EXPIRE = process.env.JWT_EXPIRE || '7d';
 
 // Generate JWT token
-const generateToken = (user) => {
+export const generateToken = (user) => {
   return jwt.sign(
     {
       id: user._id,
@@ -20,7 +20,7 @@ const generateToken = (user) => {
 };
 
 // Verify JWT token middleware
-const authenticate = async (req, res, next) => {
+export const authenticate = async (req, res, next) => {
   try {
     const authHeader = req.headers.authorization;
 
@@ -84,7 +84,7 @@ const authenticate = async (req, res, next) => {
 };
 
 // Check role middleware
-const requireRole = (...roles) => {
+export const requireRole = (...roles) => {
   return (req, res, next) => {
     if (!req.user) {
       return res.status(401).json({
@@ -105,7 +105,7 @@ const requireRole = (...roles) => {
 };
 
 // Check permission middleware
-const requirePermission = (...permissions) => {
+export const requirePermission = (...permissions) => {
   return (req, res, next) => {
     if (!req.user) {
       return res.status(401).json({
@@ -128,13 +128,4 @@ const requirePermission = (...permissions) => {
       code: 'INSUFFICIENT_PERMISSION'
     });
   };
-};
-
-module.exports = {
-  generateToken,
-  authenticate,
-  requireRole,
-  requirePermission,
-  JWT_SECRET,
-  JWT_EXPIRE
 };
