@@ -43,9 +43,29 @@ export const securityPatterns = {
       description: 'Script tag detected'
     },
     {
+      pattern: /<script[^>]*>/gi,
+      severity: 'high',
+      description: 'Script tag opening detected'
+    },
+    {
+      pattern: /<\/script>/gi,
+      severity: 'high',
+      description: 'Script tag closing detected'
+    },
+    {
       pattern: /javascript\s*:/gi,
       severity: 'high',
       description: 'JavaScript protocol detected'
+    },
+    {
+      pattern: /vbscript\s*:/gi,
+      severity: 'high',
+      description: 'VBScript protocol detected'
+    },
+    {
+      pattern: /data\s*:\s*text\/html/gi,
+      severity: 'high',
+      description: 'Data URI with HTML detected'
     },
     {
       pattern: /on\w+\s*=\s*["'][^"']*["']/gi,
@@ -53,9 +73,19 @@ export const securityPatterns = {
       description: 'HTML event handler detected'
     },
     {
+      pattern: /on(load|error|click|mouseover|focus|blur|change|submit)\s*=/gi,
+      severity: 'high',
+      description: 'Common XSS event handler detected'
+    },
+    {
       pattern: /<iframe[^>]*>.*?<\/iframe>/gi,
       severity: 'medium',
       description: 'Iframe tag detected'
+    },
+    {
+      pattern: /<iframe[^>]*>/gi,
+      severity: 'medium',
+      description: 'Iframe opening tag detected'
     },
     {
       pattern: /<object[^>]*>.*?<\/object>/gi,
@@ -68,9 +98,129 @@ export const securityPatterns = {
       description: 'Embed tag detected'
     },
     {
+      pattern: /<applet[^>]*>.*?<\/applet>/gi,
+      severity: 'high',
+      description: 'Applet tag detected'
+    },
+    {
+      pattern: /<form[^>]*>.*?<\/form>/gi,
+      severity: 'low',
+      description: 'Form tag detected'
+    },
+    {
+      pattern: /<meta[^>]*>/gi,
+      severity: 'medium',
+      description: 'Meta tag detected'
+    },
+    {
+      pattern: /<link[^>]*>/gi,
+      severity: 'medium',
+      description: 'Link tag detected'
+    },
+    {
+      pattern: /<style[^>]*>.*?<\/style>/gi,
+      severity: 'medium',
+      description: 'Style tag detected'
+    },
+    {
       pattern: /expression\s*\(/gi,
       severity: 'high',
       description: 'CSS expression detected'
+    },
+    {
+      pattern: /behavior\s*:/gi,
+      severity: 'high',
+      description: 'CSS behavior detected'
+    },
+    {
+      pattern: /@import/gi,
+      severity: 'medium',
+      description: 'CSS import detected'
+    },
+    {
+      pattern: /url\s*\(\s*javascript:/gi,
+      severity: 'high',
+      description: 'CSS URL with JavaScript detected'
+    },
+    {
+      pattern: /&#x?[0-9a-f]+;/gi,
+      severity: 'medium',
+      description: 'HTML entity encoding detected'
+    },
+    {
+      pattern: /%3c%73%63%72%69%70%74/gi,
+      severity: 'high',
+      description: 'URL encoded script tag detected'
+    },
+    {
+      pattern: /\\u[0-9a-f]{4}/gi,
+      severity: 'medium',
+      description: 'Unicode encoding detected'
+    },
+    {
+      pattern: /\\x[0-9a-f]{2}/gi,
+      severity: 'medium',
+      description: 'Hex encoding detected'
+    },
+    {
+      pattern: /<svg[^>]*>.*?<\/svg>/gi,
+      severity: 'medium',
+      description: 'SVG tag detected'
+    },
+    {
+      pattern: /<svg[^>]*onload/gi,
+      severity: 'high',
+      description: 'SVG with onload event detected'
+    },
+    {
+      pattern: /data:.*base64.*[a-zA-Z0-9+\/=]{20,}/gi,
+      severity: 'medium',
+      description: 'Base64 encoded data URI detected'
+    },
+    {
+      pattern: /alert\s*\(/gi,
+      severity: 'high',
+      description: 'JavaScript alert function detected'
+    },
+    {
+      pattern: /confirm\s*\(/gi,
+      severity: 'high',
+      description: 'JavaScript confirm function detected'
+    },
+    {
+      pattern: /prompt\s*\(/gi,
+      severity: 'high',
+      description: 'JavaScript prompt function detected'
+    },
+    {
+      pattern: /eval\s*\(/gi,
+      severity: 'critical',
+      description: 'JavaScript eval function detected'
+    },
+    {
+      pattern: /document\.cookie/gi,
+      severity: 'high',
+      description: 'Cookie access attempt detected'
+    },
+    {
+      pattern: /document\.write/gi,
+      severity: 'high',
+      description: 'Document write attempt detected'
+    },
+    {
+      pattern: /window\.location/gi,
+      severity: 'medium',
+      description: 'Window location access detected'
+    },
+    {
+      pattern: /\{\{.*\}\}/g,
+      severity: 'medium',
+      description: 'Template injection syntax detected'
+    },
+    {
+      pattern: /\$\{.*\}/g,
+      severity: 'medium',
+      description: 'Template literal injection detected'
     }
   ],
 
