@@ -1,14 +1,9 @@
-<<<<<<< HEAD
-import { checkForVulnerabilities, getThreatLevel } from '../config/securityPatterns.js';
-import RequestLog from '../models/RequestLog.js';
-import logger from '../utils/logger.js';
-=======
 const { checkForVulnerabilities, getThreatLevel } = require('../config/securityPatterns');
 const RequestLog = require('../models/RequestLog');
 const logger = require('../utils/logger');
 const { sanitizeInput, sanitizeXSS, generateCSPHeader } = require('../utils/sanitizer');
 const { responseScanner, securityHeaders } = require('./responseScanner');
->>>>>>> c69055d7c94fe498f527a3ff31820102ff66f90c
+
 
 class SecurityMiddleware {
   constructor() {

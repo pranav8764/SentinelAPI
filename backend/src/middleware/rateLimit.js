@@ -1,26 +1,15 @@
-/**
- * Rate Limiting Middleware
- * Protects against DDoS and brute force attacks
- */
 
-import rateLimit from 'express-rate-limit';
-import logger from '../utils/logger.js';
-import SecurityConfig from '../models/SecurityConfig.js';
+const rateLimit = require('express-rate-limit');
+const logger = require('../utils/logger');
+const SecurityConfig = require('../models/SecurityConfig');
 
-/**
- * In-memory store for rate limit configuration
- * Updated from database periodically
- */
 let rateLimitConfig = {
   windowMs: 60 * 1000, // 1 minute
   max: 100, // 100 requests per minute
   message: 'Too many requests from this IP, please try again later',
 };
 
-/**
- * Load rate limit configuration from database
- */
-export const loadRateLimitConfig = async () => {
+const loadRateLimitConfig = async () => {
   try {
     const config = await SecurityConfig.findOne();
     if (config && config.rateLimit) {
@@ -36,23 +25,14 @@ export const loadRateLimitConfig = async () => {
   }
 };
 
-// Load config on startup
 loadRateLimitConfig();
 
-// Reload config every 5 minutes
 setInterval(loadRateLimitConfig, 5 * 60 * 1000);
 
-/**
- * Custom key generator - uses IP address with IPv6 support
- */
 const keyGenerator = (req) => {
-  // Use express-rate-limit's built-in IP handling
   return req.ip || req.connection.remoteAddress || req.socket.remoteAddress || 'unknown';
 };
 
-/**
- * Custom handler for rate limit exceeded
- */
 const handler = (req, res) => {
   const ip = req.ip || req.connection.remoteAddress;
   logger.warn(`Rate limit exceeded for IP: ${ip}`);
@@ -66,9 +46,6 @@ const handler = (req, res) => {
   });
 };
 
-/**
- * Skip rate limiting for whitelisted IPs
- */
 const skip = async (req) => {
   try {
     const config = await SecurityConfig.findOne();
@@ -82,10 +59,7 @@ const skip = async (req) => {
   return false;
 };
 
-/**
- * Standard rate limiter for API endpoints
- */
-export const apiLimiter = rateLimit({
+const apiLimiter = rateLimit({
   windowMs: rateLimitConfig.windowMs,
   max: rateLimitConfig.max,
   message: rateLimitConfig.message,
@@ -95,10 +69,7 @@ export const apiLimiter = rateLimit({
   legacyHeaders: false, // Disable `X-RateLimit-*` headers
 });
 
-/**
- * Strict rate limiter for authentication endpoints
- */
-export const authLimiter = rateLimit({
+const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
   max: 5, // 5 requests per 15 minutes
   message: 'Too many authentication attempts, please try again later',
@@ -119,10 +90,7 @@ export const authLimiter = rateLimit({
   legacyHeaders: false,
 });
 
-/**
- * Lenient rate limiter for proxy requests
- */
-export const proxyLimiter = rateLimit({
+const proxyLimiter = rateLimit({
   windowMs: 60 * 1000, // 1 minute
   max: 200, // 200 requests per minute (more lenient for proxy)
   message: 'Too many proxy requests, please slow down',
@@ -132,10 +100,7 @@ export const proxyLimiter = rateLimit({
   legacyHeaders: false,
 });
 
-/**
- * Very strict rate limiter for scanner endpoints
- */
-export const scannerLimiter = rateLimit({
+const scannerLimiter = rateLimit({
   windowMs: 60 * 1000, // 1 minute
   max: 10, // 10 scans per minute
   message: 'Too many scan requests, please wait before scanning again',
@@ -156,10 +121,7 @@ export const scannerLimiter = rateLimit({
   legacyHeaders: false,
 });
 
-/**
- * Update rate limit configuration
- */
-export const updateRateLimitConfig = async (newConfig) => {
+const updateRateLimitConfig = async (newConfig) => {
   try {
     let config = await SecurityConfig.findOne();
     
@@ -184,9 +146,16 @@ export const updateRateLimitConfig = async (newConfig) => {
   }
 };
 
-/**
- * Get current rate limit configuration
- */
-export const getRateLimitConfig = () => {
+const getRateLimitConfig = () => {
   return rateLimitConfig;
+};
+
+module.exports = {
+  apiLimiter,
+  authLimiter,
+  proxyLimiter,
+  scannerLimiter,
+  updateRateLimitConfig,
+  getRateLimitConfig,
+  loadRateLimitConfig,
 };
