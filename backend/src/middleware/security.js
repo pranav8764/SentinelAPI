@@ -1,6 +1,6 @@
-const { checkForVulnerabilities, getThreatLevel } = require('../config/securityPatterns');
-const RequestLog = require('../models/RequestLog');
-const logger = require('../utils/logger');
+import { checkForVulnerabilities, getThreatLevel } from '../config/securityPatterns.js';
+import RequestLog from '../models/RequestLog.js';
+import logger from '../utils/logger.js';
 
 class SecurityMiddleware {
   constructor() {
@@ -203,4 +203,4 @@ class SecurityMiddleware {
   }
 }
 
-module.exports = new SecurityMiddleware();
+export default new SecurityMiddleware();

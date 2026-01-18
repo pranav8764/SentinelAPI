@@ -3,15 +3,15 @@
  * Forwards requests to target API with security checks and logging
  */
 
-const { createProxyMiddleware } = require('http-proxy-middleware');
-const { proxyConfig, isTargetAllowed, getTargetUrl } = require('../config/proxy');
-const logger = require('../utils/logger');
-const RequestLog = require('../models/RequestLog');
+import { createProxyMiddleware } from 'http-proxy-middleware';
+import { proxyConfig, isTargetAllowed, getTargetUrl } from '../config/proxy.js';
+import logger from '../utils/logger.js';
+import RequestLog from '../models/RequestLog.js';
 
 /**
  * Create proxy middleware with custom configuration
  */
-const createProxy = () => {
+export const createProxy = () => {
   return createProxyMiddleware({
     target: proxyConfig.defaultTarget,
     changeOrigin: proxyConfig.changeOrigin,
@@ -123,7 +123,7 @@ const createProxy = () => {
 /**
  * Middleware to validate proxy target before proxying
  */
-const validateProxyTarget = (req, res, next) => {
+export const validateProxyTarget = (req, res, next) => {
   const targetUrl = getTargetUrl(req);
   
   // Validate target URL format
@@ -156,7 +156,7 @@ const validateProxyTarget = (req, res, next) => {
 /**
  * Middleware to log proxy requests
  */
-const logProxyRequest = async (req, res, next) => {
+export const logProxyRequest = async (req, res, next) => {
   const targetUrl = getTargetUrl(req);
   
   try {
@@ -192,7 +192,7 @@ const logProxyRequest = async (req, res, next) => {
 /**
  * Health check for proxy
  */
-const proxyHealthCheck = async (req, res) => {
+export const proxyHealthCheck = async (req, res) => {
   const targetUrl = getTargetUrl(req);
   
   try {
@@ -226,11 +226,4 @@ const proxyHealthCheck = async (req, res) => {
       details: error.message,
     });
   }
-};
-
-module.exports = {
-  createProxy,
-  validateProxyTarget,
-  logProxyRequest,
-  proxyHealthCheck,
 };
