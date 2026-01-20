@@ -3,7 +3,7 @@
  * Provides comprehensive input sanitization and validation
  */
 
-const logger = require('./logger');
+import logger from './logger.js';
 
 /**
  * HTML entity encoding map
@@ -545,7 +545,7 @@ function generateCSPHeader(options = {}) {
   return directives.join('; ');
 }
 
-module.exports = {
+export {
   // Core sanitization functions
   sanitizeInput,
   sanitizeXSS,

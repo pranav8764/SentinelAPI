@@ -1,26 +1,30 @@
-const express = require('express');
-const cors = require('cors');
-const dotenv = require('dotenv');
-const http = require('http');
-const socketIo = require('socket.io');
+import express from 'express';
+import cors from 'cors';
+import dotenv from 'dotenv';
+import http from 'http';
+import { Server as SocketIOServer } from 'socket.io';
 
 // Load environment variables
 dotenv.config();
 
 // Import custom modules
-const database = require('./config/database');
-const logger = require('./utils/logger');
-const requestLogger = require('./middleware/requestLogger');
-const securityMiddleware = require('./middleware/security');
+import database from './config/database.js';
+import logger from './utils/logger.js';
+import requestLogger from './middleware/requestLogger.js';
+import securityMiddleware from './middleware/security.js';
 
 // Import routes
-const adminRoutes = require('./routes/admin');
-const authRoutes = require('./routes/auth');
-const proxyManagementRoutes = require('./routes/proxy');
+import adminRoutes from './routes/admin.js';
+import authRoutes from './routes/auth.js';
+import proxyManagementRoutes from './routes/proxy.js';
+
+// Import proxy middleware
+import { createProxy, validateProxyTarget, logProxyRequest } from './middleware/proxy.js';
+import { proxyLimiter } from './middleware/rateLimit.js';
 
 const app = express();
 const server = http.createServer(app);
-const io = socketIo(server, {
+const io = new SocketIOServer(server, {
   cors: {
     origin: process.env.FRONTEND_URL || "http://localhost:3000",
     methods: ["GET", "POST"]
@@ -33,6 +37,9 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(requestLogger);
 app.use(securityMiddleware.middleware());
+
+// Store Socket.IO instance on app for middleware access
+app.set('io', io);
 
 // Initialize database connection
 database.connect();
@@ -61,9 +68,6 @@ app.use('/api/admin', adminRoutes);
 app.use('/api/proxy', proxyManagementRoutes);
 
 // Proxy route - forwards requests to target API
-const { createProxy, validateProxyTarget, logProxyRequest } = require('./middleware/proxy');
-const { proxyLimiter } = require('./middleware/rateLimit');
-
 app.use('/proxy',
   proxyLimiter,
   validateProxyTarget,
@@ -97,4 +101,4 @@ process.on('SIGTERM', async () => {
   });
 });
 
-module.exports = { app, server, io };
+export { app, server, io };

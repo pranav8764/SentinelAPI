@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 
 const requestLogSchema = new mongoose.Schema({
   timestamp: {
@@ -97,4 +97,4 @@ requestLogSchema.index({ timestamp: -1, blocked: 1 });
 requestLogSchema.index({ ip: 1, timestamp: -1 });
 requestLogSchema.index({ threatLevel: 1, timestamp: -1 });
 
-module.exports = mongoose.model('RequestLog', requestLogSchema);
+export default mongoose.model('RequestLog', requestLogSchema);

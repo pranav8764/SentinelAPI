@@ -1,10 +1,10 @@
-const express = require('express');
-const RequestLog = require('../models/RequestLog');
-const SecurityConfig = require('../models/SecurityConfig');
-const AdminUser = require('../models/AdminUser');
-const logger = require('../utils/logger');
-const { authenticate, requireRole, requirePermission } = require('../middleware/auth');
-const { updateRateLimitConfig, getRateLimitConfig } = require('../middleware/rateLimit');
+import express from 'express';
+import RequestLog from '../models/RequestLog.js';
+import SecurityConfig from '../models/SecurityConfig.js';
+import AdminUser from '../models/AdminUser.js';
+import logger from '../utils/logger.js';
+import { authenticate, requireRole, requirePermission } from '../middleware/auth.js';
+import { updateRateLimitConfig, getRateLimitConfig } from '../middleware/rateLimit.js';
 
 const router = express.Router();
 
@@ -240,4 +240,4 @@ router.put('/rate-limit', requirePermission('manage_config'), async (req, res) =
   }
 });
 
-module.exports = router;
+export default router;

@@ -1,7 +1,7 @@
-const express = require('express');
-const AdminUser = require('../models/AdminUser');
-const { generateToken, authenticate } = require('../middleware/auth');
-const logger = require('../utils/logger');
+import express from 'express';
+import AdminUser from '../models/AdminUser.js';
+import { generateToken, authenticate } from '../middleware/auth.js';
+import logger from '../utils/logger.js';
 
 const router = express.Router();
 
@@ -174,4 +174,4 @@ router.post('/logout', authenticate, async (req, res) => {
   res.json({ message: 'Logged out successfully' });
 });
 
-module.exports = router;
+export default router;

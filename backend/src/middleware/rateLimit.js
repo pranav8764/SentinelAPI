@@ -1,7 +1,7 @@
 
-const rateLimit = require('express-rate-limit');
-const logger = require('../utils/logger');
-const SecurityConfig = require('../models/SecurityConfig');
+import rateLimit from 'express-rate-limit';
+import logger from '../utils/logger.js';
+import SecurityConfig from '../models/SecurityConfig.js';
 
 let rateLimitConfig = {
   windowMs: 60 * 1000, // 1 minute
@@ -150,7 +150,7 @@ const getRateLimitConfig = () => {
   return rateLimitConfig;
 };
 
-module.exports = {
+export {
   apiLimiter,
   authLimiter,
   proxyLimiter,
