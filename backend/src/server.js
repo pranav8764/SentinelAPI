@@ -12,6 +12,7 @@ import database from './config/database.js';
 import logger from './utils/logger.js';
 import requestLogger from './middleware/requestLogger.js';
 import securityMiddleware from './middleware/security.js';
+import { nosqlProtection } from './middleware/nosqlProtection.js';
 
 // Import routes
 import adminRoutes from './routes/admin.js';
@@ -36,6 +37,17 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(requestLogger);
+
+// Apply NoSQL protection globally (before security middleware)
+app.use(nosqlProtection({
+  sanitizeBody: true,
+  sanitizeQuery: true,
+  sanitizeParams: true,
+  allowOperators: false,
+  strictMode: true,
+  blockOnDanger: true
+}));
+
 app.use(securityMiddleware.middleware());
 
 // Store Socket.IO instance on app for middleware access

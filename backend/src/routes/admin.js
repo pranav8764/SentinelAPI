@@ -240,4 +240,23 @@ router.put('/rate-limit', requirePermission('manage_config'), async (req, res) =
   }
 });
 
+// Delete all logs
+router.delete('/logs', requirePermission('manage_config'), async (req, res) => {
+  try {
+    const result = await RequestLog.deleteMany({});
+    logger.info(`All logs cleared: ${result.deletedCount} logs deleted`);
+    res.json({
+      success: true,
+      message: 'All logs cleared successfully',
+      deletedCount: result.deletedCount
+    });
+  } catch (error) {
+    logger.error(`Error clearing logs: ${error.message}`);
+    res.status(500).json({ 
+      success: false,
+      error: 'Failed to clear logs' 
+    });
+  }
+});
+
 export default router;

@@ -108,10 +108,11 @@ class SecurityMiddleware {
         }
 
         if (this.config.scanResponses) {
-          responseScanner({
-            autoSanitize: this.config.autoSanitizeResponses,
-            blockXSSResponses: this.config.blockXSSResponses
-          })(req, res, () => {});
+          // Disabled to prevent conflicts with response wrapping
+          // responseScanner({
+          //   autoSanitize: this.config.autoSanitizeResponses,
+          //   blockXSSResponses: this.config.blockXSSResponses
+          // })(req, res, () => {});
         }
 
         if (this.config.logAllRequests || vulnerabilities.length > 0) {
