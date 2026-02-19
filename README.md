@@ -98,6 +98,16 @@ Route your API traffic through SentinelAPI for live monitoring:
 - **Request/response logging** to database
 - **Configurable rate limiting** per IP
 - **Target URL whitelist** for security
+
+### 📡 Live Monitoring Dashboard
+
+Real-time visibility into API security with WebSocket-powered updates:
+- **Live Metrics** - Requests per minute, blocked threats, response times, active connections
+- **Request Stream** - Real-time feed of all API requests with full details
+- **Security Alerts** - Instant notifications for blocked threats and suspicious activity
+- **Threat Distribution** - Visual breakdown of threat levels (Low, Medium, High, Critical)
+- **Historical Data** - Time-series analytics and top IP tracking
+- **Auto-Reconnect** - Resilient WebSocket connection with automatic recovery
 - **Response time tracking** and analytics
 
 ### 📊 Detailed Reports

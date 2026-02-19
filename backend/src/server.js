@@ -21,10 +21,14 @@ import authTestRoutes from './routes/authTest.js';
 import apiKeysRoutes from './routes/apiKeys.js';
 import proxyManagementRoutes from './routes/proxy.js';
 import scannerRoutes from './routes/scanner.js';
+import monitoringRoutes from './routes/monitoring.js';
 
 // Import proxy middleware
 import { createProxy, validateProxyTarget, logProxyRequest } from './middleware/proxy.js';
 import { proxyLimiter } from './middleware/rateLimit.js';
+
+// Import live monitoring
+import LiveMonitor from './services/liveMonitor.js';
 
 const app = express();
 const server = http.createServer(app);
@@ -71,6 +75,10 @@ app.use((req, res, next) => {
 // Store Socket.IO instance on app for middleware access
 app.set('io', io);
 
+// Initialize live monitoring
+const liveMonitor = new LiveMonitor(io);
+app.set('liveMonitor', liveMonitor);
+
 // Initialize database connection
 database.connect();
 
@@ -99,6 +107,7 @@ app.use('/api/api-keys', apiKeysRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/proxy', proxyManagementRoutes);
 app.use('/api/scanner', scannerRoutes);
+app.use('/api/monitoring', monitoringRoutes);
 
 // Proxy route - forwards requests to target API
 app.use('/proxy',

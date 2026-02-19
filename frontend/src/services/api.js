@@ -73,3 +73,11 @@ export const apiKeysAPI = {
 };
 
 export default api;
+
+// Monitoring API
+export const monitoringAPI = {
+  getRealtimeStats: () => api.get('/api/monitoring/stats/realtime'),
+  getRecentActivity: (limit = 50) => api.get('/api/monitoring/activity/recent', { params: { limit } }),
+  getTimeSeries: (hours = 24) => api.get('/api/monitoring/stats/timeseries', { params: { hours } }),
+  getTopIPs: (limit = 10, hours = 24) => api.get('/api/monitoring/stats/top-ips', { params: { limit, hours } }),
+};
