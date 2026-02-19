@@ -7,6 +7,7 @@ function Layout({ children, user, onLogout }) {
     { name: 'Dashboard', path: '/', icon: '📊' },
     { name: 'Live Monitor', path: '/monitoring', icon: '📡' },
     { name: 'Scanner', path: '/scanner', icon: '🔍' },
+    { name: 'Vulnerability', path: '/vulnerability', icon: '🛡️' },
     { name: 'Auth Tester', path: '/auth-tester', icon: '🔐' },
     { name: 'API Keys', path: '/api-keys', icon: '🔑' },
     { name: 'Logs', path: '/logs', icon: '📋' },
