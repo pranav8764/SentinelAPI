@@ -57,4 +57,19 @@ export const proxyAPI = {
   getConfig: () => api.get('/proxy/config'),
 };
 
+export const authTestAPI = {
+  testOAuth: (config) => api.post('/auth-test/oauth', config),
+  testApiKey: (config) => api.post('/auth-test/apikey', config),
+  testSession: (config) => api.post('/auth-test/session', config),
+  testJWT: (config) => api.post('/auth-test/jwt', config),
+};
+
+export const apiKeysAPI = {
+  getAll: () => api.get('/api-keys'),
+  create: (data) => api.post('/api-keys', data),
+  update: (id, data) => api.put(`/api-keys/${id}`, data),
+  delete: (id) => api.delete(`/api-keys/${id}`),
+  getStats: (id) => api.get(`/api-keys/${id}/stats`),
+};
+
 export default api;

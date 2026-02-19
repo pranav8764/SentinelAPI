@@ -1,8 +1,11 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import Login from './pages/Login';
+import Signup from './pages/Signup';
 import Dashboard from './pages/Dashboard';
 import Scanner from './pages/Scanner';
+import AuthTester from './pages/AuthTester';
+import ApiKeys from './pages/ApiKeys';
 import Logs from './pages/Logs';
 import Settings from './pages/Settings';
 import { authAPI } from './services/api';
@@ -34,6 +37,11 @@ function App() {
     setUser(userData);
   };
 
+  const handleSignup = (userData, token) => {
+    localStorage.setItem('token', token);
+    setUser(userData);
+  };
+
   const handleLogout = () => {
     localStorage.removeItem('token');
     setUser(null);
@@ -58,12 +66,24 @@ function App() {
           element={user ? <Navigate to="/" /> : <Login onLogin={handleLogin} />}
         />
         <Route
+          path="/signup"
+          element={user ? <Navigate to="/" /> : <Signup onSignup={handleSignup} />}
+        />
+        <Route
           path="/"
           element={user ? <Dashboard user={user} onLogout={handleLogout} /> : <Navigate to="/login" />}
         />
         <Route
           path="/scanner"
           element={user ? <Scanner user={user} onLogout={handleLogout} /> : <Navigate to="/login" />}
+        />
+        <Route
+          path="/auth-tester"
+          element={user ? <AuthTester user={user} onLogout={handleLogout} /> : <Navigate to="/login" />}
+        />
+        <Route
+          path="/api-keys"
+          element={user ? <ApiKeys user={user} onLogout={handleLogout} /> : <Navigate to="/login" />}
         />
         <Route
           path="/logs"
