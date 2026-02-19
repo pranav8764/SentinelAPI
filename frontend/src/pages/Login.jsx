@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { authAPI } from '../services/api';
+import { Link } from 'react-router-dom';
 
 function Login({ onLogin }) {
   const [formData, setFormData] = useState({
@@ -85,7 +86,13 @@ function Login({ onLogin }) {
           </form>
 
           <div className="mt-6 text-center text-sm text-slate-400">
-            <p>Test credentials: testuser / Test123456</p>
+            <p className="mb-2">Test credentials: testuser / Test123456</p>
+            <p>
+              Don't have an account?{' '}
+              <Link to="/signup" className="text-cyan-400 hover:text-cyan-300 font-medium">
+                Sign up
+              </Link>
+            </p>
           </div>
         </div>
       </div>

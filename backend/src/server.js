@@ -17,6 +17,8 @@ import { nosqlProtection } from './middleware/nosqlProtection.js';
 // Import routes
 import adminRoutes from './routes/admin.js';
 import authRoutes from './routes/auth.js';
+import authTestRoutes from './routes/authTest.js';
+import apiKeysRoutes from './routes/apiKeys.js';
 import proxyManagementRoutes from './routes/proxy.js';
 import scannerRoutes from './routes/scanner.js';
 
@@ -92,6 +94,8 @@ app.get('/health', (req, res) => {
 
 // Routes
 app.use('/api/auth', authRoutes);
+app.use('/api/auth-test', authTestRoutes);
+app.use('/api/api-keys', apiKeysRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/proxy', proxyManagementRoutes);
 app.use('/api/scanner', scannerRoutes);
