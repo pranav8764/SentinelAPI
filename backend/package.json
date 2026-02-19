@@ -6,6 +6,8 @@
     "start": "node src/server.js",
     "dev": "nodemon src/server.js",
     "test": "jest",
+    "test:security": "node security-tests.js",
+    "test:nosql": "node test-nosql-protection.js",
     "lint": "eslint ."
   },
   "keywords": [],
@@ -28,6 +30,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.39.2",
+    "chalk": "^5.6.2",
     "eslint": "^9.39.2",
     "jest": "^30.2.0",
     "nodemon": "^3.1.11"

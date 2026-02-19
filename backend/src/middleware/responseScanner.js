@@ -1,6 +1,6 @@
-const logger = require('../utils/logger');
-const { checkForVulnerabilities } = require('../config/securityPatterns');
-const { sanitizeXSS } = require('../utils/sanitizer');
+import logger from '../utils/logger.js';
+import { checkForVulnerabilities } from '../config/securityPatterns.js';
+import { sanitizeXSS } from '../utils/sanitizer.js';
 
 const SCAN_CONFIG = {
   maxScanSize: 1024 * 1024,
@@ -279,7 +279,7 @@ function securityHeaders(options = {}) {
   };
 }
 
-module.exports = {
+export {
   responseScanner,
   securityHeaders,
   scanResponseBody,

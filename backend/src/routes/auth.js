@@ -1,14 +1,26 @@
-const express = require('express');
-const AdminUser = require('../models/AdminUser');
-const { generateToken, authenticate } = require('../middleware/auth');
-const logger = require('../utils/logger');
+import express from 'express';
+import AdminUser from '../models/AdminUser.js';
+import { generateToken, authenticate } from '../middleware/auth.js';
+import { nosqlProtection, validateUserInput } from '../middleware/nosqlProtection.js';
+import logger from '../utils/logger.js';
 
 const router = express.Router();
+
+// Apply strict NoSQL protection to all auth routes
+router.use(nosqlProtection({
+  sanitizeBody: true,
+  sanitizeQuery: true,
+  allowOperators: false,  // Never allow operators in auth
+  strictMode: true,       // Strict sanitization
+  blockOnDanger: true     // Block dangerous patterns immediately
+}));
 
 // Login
 router.post('/login', async (req, res) => {
   try {
-    const { username, password } = req.body;
+    // Validate and sanitize inputs
+    const username = validateUserInput(req.body.username, 'string');
+    const password = validateUserInput(req.body.password, 'string');
 
     if (!username || !password) {
       return res.status(400).json({
@@ -17,7 +29,7 @@ router.post('/login', async (req, res) => {
       });
     }
 
-    // Find user by username or email
+    // Find user by username or email (safe because inputs are validated)
     const user = await AdminUser.findOne({
       $or: [{ username }, { email: username }]
     });
@@ -89,7 +101,11 @@ router.post('/login', async (req, res) => {
 // Register (only for initial setup or admin creation)
 router.post('/register', async (req, res) => {
   try {
-    const { username, email, password, role } = req.body;
+    // Validate and sanitize inputs
+    const username = validateUserInput(req.body.username, 'string');
+    const email = validateUserInput(req.body.email, 'email');
+    const password = validateUserInput(req.body.password, 'string');
+    const role = req.body.role ? validateUserInput(req.body.role, 'string') : 'admin';
 
     // Validate input
     if (!username || !email || !password) {
@@ -99,7 +115,7 @@ router.post('/register', async (req, res) => {
       });
     }
 
-    // Check if user already exists
+    // Check if user already exists (safe because inputs are validated)
     const existingUser = await AdminUser.findOne({
       $or: [{ username }, { email }]
     });
@@ -111,12 +127,12 @@ router.post('/register', async (req, res) => {
       });
     }
 
-    // Create new user
+    // Create new user (all inputs are validated)
     const user = new AdminUser({
       username,
       email,
       password,
-      role: role || 'admin',
+      role,
       permissions: ['view_logs', 'manage_config', 'view_analytics']
     });
 
@@ -174,4 +190,4 @@ router.post('/logout', authenticate, async (req, res) => {
   res.json({ message: 'Logged out successfully' });
 });
 
-module.exports = router;
+export default router;

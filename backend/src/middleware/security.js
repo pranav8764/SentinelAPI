@@ -1,8 +1,8 @@
-const { checkForVulnerabilities, getThreatLevel } = require('../config/securityPatterns');
-const RequestLog = require('../models/RequestLog');
-const logger = require('../utils/logger');
-const { sanitizeInput, sanitizeXSS, generateCSPHeader } = require('../utils/sanitizer');
-const { responseScanner, securityHeaders } = require('./responseScanner');
+import { checkForVulnerabilities, getThreatLevel } from '../config/securityPatterns.js';
+import RequestLog from '../models/RequestLog.js';
+import logger from '../utils/logger.js';
+import { sanitizeInput, sanitizeXSS, generateCSPHeader } from '../utils/sanitizer.js';
+import { responseScanner, securityHeaders } from './responseScanner.js';
 
 
 class SecurityMiddleware {
@@ -108,38 +108,45 @@ class SecurityMiddleware {
         }
 
         if (this.config.scanResponses) {
-          responseScanner({
-            autoSanitize: this.config.autoSanitizeResponses,
-            blockXSSResponses: this.config.blockXSSResponses
-          })(req, res, () => {});
+          // Disabled to prevent conflicts with response wrapping
+          // responseScanner({
+          //   autoSanitize: this.config.autoSanitizeResponses,
+          //   blockXSSResponses: this.config.blockXSSResponses
+          // })(req, res, () => {});
         }
 
         if (this.config.logAllRequests || vulnerabilities.length > 0) {
           const originalEnd = res.end;
-          res.end = async (chunk, encoding) => {
-            await this.logRequest(req, res, {
+          res.end = function(chunk, encoding) {
+            // Log asynchronously without blocking the response
+            this.logRequest(req, res, {
               blocked: false,
               threatLevel,
               vulnerabilities,
               responseTime: Date.now() - startTime,
               statusCode: res.statusCode,
               sanitizedData
-            });
+            }).catch(err => logger.error('Error logging request:', err));
             
             if (req.app && req.app.get('io')) {
-              req.app.get('io').emit('request:logged', {
-                method: req.method,
-                url: req.originalUrl,
-                ip: req.ip,
-                statusCode: res.statusCode,
-                threatLevel,
-                blocked: false,
-                timestamp: new Date().toISOString()
-              });
+              try {
+                req.app.get('io').emit('request:logged', {
+                  method: req.method,
+                  url: req.originalUrl,
+                  ip: req.ip,
+                  statusCode: res.statusCode,
+                  threatLevel,
+                  blocked: false,
+                  timestamp: new Date().toISOString()
+                });
+              } catch (err) {
+                logger.error('Error emitting socket event:', err);
+              }
             }
             
-            originalEnd.call(res, chunk, encoding);
-          };
+            // Call original end immediately
+            return originalEnd.call(res, chunk, encoding);
+          }.bind(this);
         }
 
         if (this.config.addSecurityHeaders) {

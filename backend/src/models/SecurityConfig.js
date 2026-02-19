@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 
 const securityConfigSchema = new mongoose.Schema({
   name: {
@@ -124,4 +124,4 @@ const securityConfigSchema = new mongoose.Schema({
   timestamps: true
 });
 
-module.exports = mongoose.model('SecurityConfig', securityConfigSchema);
+export default mongoose.model('SecurityConfig', securityConfigSchema);

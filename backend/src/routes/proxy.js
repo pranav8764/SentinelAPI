@@ -3,16 +3,16 @@
  * Handles proxy-related endpoints
  */
 
-const express = require('express');
+import express from 'express';
 const router = express.Router();
-const { 
+import { 
   createProxy, 
   validateProxyTarget, 
   logProxyRequest,
   proxyHealthCheck 
-} = require('../middleware/proxy');
-const { proxyLimiter } = require('../middleware/rateLimit');
-const securityMiddleware = require('../middleware/security');
+} from '../middleware/proxy.js';
+import { proxyLimiter } from '../middleware/rateLimit.js';
+import securityMiddleware from '../middleware/security.js';
 
 /**
  * GET /health
@@ -25,19 +25,19 @@ router.get('/health', proxyHealthCheck);
  * Get current proxy configuration
  */
 router.get('/config', (req, res) => {
-  const { proxyConfig } = require('../config/proxy');
-  
-  res.json({
-    success: true,
-    config: {
-      defaultTarget: proxyConfig.defaultTarget,
-      timeout: proxyConfig.timeout,
-      allowedTargets: proxyConfig.allowedTargets,
-      changeOrigin: proxyConfig.changeOrigin,
-      secure: proxyConfig.secure,
-    },
-    timestamp: new Date().toISOString(),
+  import('../config/proxy.js').then(({ proxyConfig }) => {
+    res.json({
+      success: true,
+      config: {
+        defaultTarget: proxyConfig.defaultTarget,
+        timeout: proxyConfig.timeout,
+        allowedTargets: proxyConfig.allowedTargets,
+        changeOrigin: proxyConfig.changeOrigin,
+        secure: proxyConfig.secure,
+      },
+      timestamp: new Date().toISOString(),
+    });
   });
 });
 
-module.exports = router;
+export default router;
