@@ -15,7 +15,7 @@ const loadRateLimitConfig = async () => {
     if (config && config.rateLimit) {
       rateLimitConfig = {
         windowMs: config.rateLimit.windowMs || rateLimitConfig.windowMs,
-        max: config.rateLimit.max || rateLimitConfig.max,
+        max: config.rateLimit.max || config.rateLimit.maxRequests || rateLimitConfig.max,
         message: config.rateLimit.message || rateLimitConfig.message,
       };
       logger.info('Rate limit configuration loaded from database');
@@ -51,7 +51,16 @@ const skip = async (req) => {
     const config = await SecurityConfig.findOne();
     if (config && config.whitelist) {
       const ip = req.ip || req.connection.remoteAddress;
-      return config.whitelist.includes(ip);
+      return config.whitelist.some((entry) => {
+        if (typeof entry === 'string') {
+          return entry === ip;
+        }
+        if (entry && typeof entry === 'object') {
+          const enabled = entry.enabled !== false;
+          return enabled && entry.ip === ip;
+        }
+        return false;
+      });
     }
   } catch (error) {
     logger.error('Error checking whitelist:', error);
@@ -132,6 +141,7 @@ const updateRateLimitConfig = async (newConfig) => {
     config.rateLimit = {
       windowMs: newConfig.windowMs || rateLimitConfig.windowMs,
       max: newConfig.max || rateLimitConfig.max,
+      maxRequests: newConfig.max || rateLimitConfig.max,
       message: newConfig.message || rateLimitConfig.message,
     };
     

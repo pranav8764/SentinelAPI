@@ -71,6 +71,10 @@ class SecurityMiddleware {
 
         blocked = this.shouldBlock(threatLevel, vulnerabilities);
 
+        req.threatLevel = threatLevel;
+        req.vulnerabilities = vulnerabilities;
+        req.blocked = blocked;
+
         if (blocked) {
           logger.warn(`Blocked request from ${req.ip}: ${threatLevel} threat detected`, {
             url: req.originalUrl,

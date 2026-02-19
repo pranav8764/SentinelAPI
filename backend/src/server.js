@@ -13,6 +13,7 @@ import logger from './utils/logger.js';
 import requestLogger from './middleware/requestLogger.js';
 import securityMiddleware from './middleware/security.js';
 import { nosqlProtection } from './middleware/nosqlProtection.js';
+import { apiLimiter } from './middleware/rateLimit.js';
 
 // Import routes
 import adminRoutes from './routes/admin.js';
@@ -36,7 +37,7 @@ const app = express();
 const server = http.createServer(app);
 const io = new SocketIOServer(server, {
   cors: {
-    origin: process.env.FRONTEND_URL || "http://localhost:3000",
+    origin: process.env.FRONTEND_URL || "http://localhost:5173",
     methods: ["GET", "POST"]
   }
 });
@@ -46,6 +47,7 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(requestLogger);
+app.use('/api', apiLimiter);
 
 // Apply NoSQL protection globally (before security middleware)
 // Exclude scanner and vulnerability routes as they need to handle URLs with special characters

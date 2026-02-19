@@ -1,5 +1,4 @@
 import logger from '../utils/logger.js';
-import RequestLog from '../models/RequestLog.js';
 
 const requestLogger = (req, res, next) => {
   const start = Date.now();
@@ -13,7 +12,7 @@ const requestLogger = (req, res, next) => {
     const duration = Date.now() - start;
     logger.http(`${req.method} ${req.url} - ${res.statusCode} - ${duration}ms`);
     
-    // Save to database and emit to live monitor
+    // Emit to live monitor
     const logData = {
       method: req.method,
       url: req.url,
@@ -28,11 +27,6 @@ const requestLogger = (req, res, next) => {
       threatLevel: req.threatLevel || 'low',
       vulnerabilities: req.vulnerabilities || []
     };
-
-    // Save to database (async, don't wait)
-    RequestLog.create(logData).catch(err => {
-      logger.error('Error saving request log:', err);
-    });
 
     // Emit to live monitor
     const liveMonitor = req.app.get('liveMonitor');

@@ -60,7 +60,8 @@ router.post('/oauth', async (req, res) => {
     const startTime = Date.now();
     
     try {
-      const response = await axios.post(tokenUrl, tokenData, {
+      const formBody = new URLSearchParams(tokenData);
+      const response = await axios.post(tokenUrl, formBody.toString(), {
         headers: {
           'Content-Type': 'application/x-www-form-urlencoded',
         },

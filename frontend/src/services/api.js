@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
 const api = axios.create({
   baseURL: API_URL,
@@ -76,8 +76,8 @@ export default api;
 
 // Monitoring API
 export const monitoringAPI = {
-  getRealtimeStats: () => api.get('/api/monitoring/stats/realtime'),
-  getRecentActivity: (limit = 50) => api.get('/api/monitoring/activity/recent', { params: { limit } }),
-  getTimeSeries: (hours = 24) => api.get('/api/monitoring/stats/timeseries', { params: { hours } }),
-  getTopIPs: (limit = 10, hours = 24) => api.get('/api/monitoring/stats/top-ips', { params: { limit, hours } }),
+  getRealtimeStats: () => api.get('/monitoring/stats/realtime'),
+  getRecentActivity: (limit = 50) => api.get('/monitoring/activity/recent', { params: { limit } }),
+  getTimeSeries: (hours = 24) => api.get('/monitoring/stats/timeseries', { params: { hours } }),
+  getTopIPs: (limit = 10, hours = 24) => api.get('/monitoring/stats/top-ips', { params: { limit, hours } }),
 };
