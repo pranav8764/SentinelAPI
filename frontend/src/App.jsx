@@ -9,6 +9,7 @@ import ApiKeys from './pages/ApiKeys';
 import Logs from './pages/Logs';
 import Settings from './pages/Settings';
 import LiveMonitoring from './pages/LiveMonitoring';
+import VulnerabilityTester from './pages/VulnerabilityTester';
 import { authAPI } from './services/api';
 
 function App() {
@@ -97,6 +98,10 @@ function App() {
         <Route
           path="/monitoring"
           element={user ? <LiveMonitoring user={user} onLogout={handleLogout} /> : <Navigate to="/login" />}
+        />
+        <Route
+          path="/vulnerability"
+          element={user ? <VulnerabilityTester user={user} onLogout={handleLogout} /> : <Navigate to="/login" />}
         />
       </Routes>
     </Router>

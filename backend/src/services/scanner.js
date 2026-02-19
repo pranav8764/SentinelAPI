@@ -4,7 +4,6 @@
  */
 
 import axios from 'axios';
-import { checkForVulnerabilities, getThreatLevel } from '../config/securityPatterns.js';
 import logger from '../utils/logger.js';
 
 class EndpointScanner {
@@ -101,6 +100,21 @@ class EndpointScanner {
       const rateLimitTests = await this.testRateLimiting(url, method, requestHeaders, body);
       scanResults.tests.push(...rateLimitTests);
       scanResults.vulnerabilities.push(...rateLimitTests.filter(t => !t.passed).map(t => t.vulnerability));
+
+      // 10. Test SSL/TLS Configuration
+      const sslTests = await this.testSSLTLS(url);
+      scanResults.tests.push(...sslTests);
+      scanResults.vulnerabilities.push(...sslTests.filter(t => !t.passed).map(t => t.vulnerability));
+
+      // 11. Test Sensitive Data Exposure
+      const dataExposureTests = await this.testSensitiveDataExposure(url, method, requestHeaders, body);
+      scanResults.tests.push(...dataExposureTests);
+      scanResults.vulnerabilities.push(...dataExposureTests.filter(t => !t.passed).map(t => t.vulnerability));
+
+      // 12. Test Broken Access Control
+      const accessControlTests = await this.testBrokenAccessControl(url, method, requestHeaders, body);
+      scanResults.tests.push(...accessControlTests);
+      scanResults.vulnerabilities.push(...accessControlTests.filter(t => !t.passed).map(t => t.vulnerability));
 
       // Calculate summary
       scanResults.vulnerabilities.forEach(vuln => {
@@ -507,6 +521,14 @@ class EndpointScanner {
     const tests = [];
 
     try {
+      // Test 1: Wildcard origin
+      const wildcardTest = {
+        name: 'CORS Wildcard Origin Test',
+        category: 'cors',
+        passed: true,
+        message: ''
+      };
+
       const response = await axios({
         url,
         method: 'OPTIONS',
@@ -519,30 +541,24 @@ class EndpointScanner {
         validateStatus: () => true
       });
 
-      const test = {
-        name: 'CORS Configuration Test',
-        category: 'cors',
-        passed: true,
-        message: ''
-      };
-
       const allowOrigin = response.headers['access-control-allow-origin'];
+      const allowCredentials = response.headers['access-control-allow-credentials'];
 
       if (allowOrigin === '*') {
-        test.passed = false;
-        test.vulnerability = {
+        wildcardTest.passed = false;
+        wildcardTest.vulnerability = {
           type: 'CORS Misconfiguration',
-          severity: 'medium',
+          severity: allowCredentials === 'true' ? 'high' : 'medium',
           description: 'CORS policy allows requests from any origin',
           evidence: 'Access-Control-Allow-Origin: *',
           remediation: 'Restrict CORS to specific trusted origins instead of using wildcard',
           cwe: 'CWE-942',
           owasp: 'A05:2021 - Security Misconfiguration'
         };
-        test.message = 'Overly permissive CORS policy detected';
+        wildcardTest.message = 'Overly permissive CORS policy detected';
       } else if (allowOrigin === 'https://evil.com') {
-        test.passed = false;
-        test.vulnerability = {
+        wildcardTest.passed = false;
+        wildcardTest.vulnerability = {
           type: 'CORS Misconfiguration',
           severity: 'high',
           description: 'CORS policy reflects arbitrary origins',
@@ -551,12 +567,73 @@ class EndpointScanner {
           cwe: 'CWE-942',
           owasp: 'A05:2021 - Security Misconfiguration'
         };
-        test.message = 'CORS policy reflects arbitrary origins';
+        wildcardTest.message = 'CORS policy reflects arbitrary origins';
       } else {
-        test.message = 'CORS configuration appears secure';
+        wildcardTest.message = 'CORS origin configuration appears secure';
       }
 
-      tests.push(test);
+      tests.push(wildcardTest);
+
+      // Test 2: CORS with credentials
+      if (allowOrigin === '*' && allowCredentials === 'true') {
+        const credentialsTest = {
+          name: 'CORS Credentials Misconfiguration',
+          category: 'cors',
+          passed: false,
+          message: 'CORS allows credentials with wildcard origin',
+          vulnerability: {
+            type: 'CORS Credentials Misconfiguration',
+            severity: 'critical',
+            description: 'CORS allows credentials with wildcard origin (invalid configuration)',
+            evidence: 'Access-Control-Allow-Origin: * with Access-Control-Allow-Credentials: true',
+            remediation: 'Never use wildcard origin with credentials. Specify exact origins.',
+            cwe: 'CWE-942',
+            owasp: 'A05:2021 - Security Misconfiguration'
+          }
+        };
+        tests.push(credentialsTest);
+      }
+
+      // Test 3: Null origin
+      const nullOriginTest = {
+        name: 'CORS Null Origin Test',
+        category: 'cors',
+        passed: true,
+        message: ''
+      };
+
+      const nullResponse = await axios({
+        url,
+        method: 'OPTIONS',
+        headers: {
+          ...headers,
+          'Origin': 'null',
+          'Access-Control-Request-Method': method
+        },
+        timeout: this.timeout,
+        validateStatus: () => true
+      });
+
+      const nullAllowOrigin = nullResponse.headers['access-control-allow-origin'];
+
+      if (nullAllowOrigin === 'null') {
+        nullOriginTest.passed = false;
+        nullOriginTest.vulnerability = {
+          type: 'CORS Null Origin Allowed',
+          severity: 'medium',
+          description: 'CORS policy allows null origin',
+          evidence: 'Access-Control-Allow-Origin: null',
+          remediation: 'Reject requests with null origin as they can be exploited',
+          cwe: 'CWE-942',
+          owasp: 'A05:2021 - Security Misconfiguration'
+        };
+        nullOriginTest.message = 'CORS allows null origin';
+      } else {
+        nullOriginTest.message = 'Null origin properly rejected';
+      }
+
+      tests.push(nullOriginTest);
+
     } catch (error) {
       logger.error(`CORS test failed: ${error.message}`);
     }
@@ -670,12 +747,344 @@ class EndpointScanner {
   }
 
   /**
+   * Test SSL/TLS Configuration
+   */
+  async testSSLTLS(url) {
+    const tests = [];
+    const test = {
+      name: 'SSL/TLS Configuration Test',
+      category: 'ssl_tls',
+      passed: true,
+      message: ''
+    };
+
+    try {
+      const urlObj = new URL(url);
+
+      // Check if HTTPS is used
+      if (urlObj.protocol !== 'https:') {
+        test.passed = false;
+        test.vulnerability = {
+          type: 'Insecure Protocol',
+          severity: 'high',
+          description: 'Endpoint uses HTTP instead of HTTPS',
+          evidence: `URL uses ${urlObj.protocol} protocol`,
+          remediation: 'Use HTTPS for all endpoints to encrypt data in transit. Implement TLS 1.2 or higher.',
+          cwe: 'CWE-319',
+          owasp: 'A02:2021 - Cryptographic Failures'
+        };
+        test.message = 'Endpoint does not use HTTPS';
+      } else {
+        // Test HTTPS connection
+        try {
+          const response = await axios({
+            url,
+            method: 'GET',
+            timeout: this.timeout,
+            validateStatus: () => true
+          });
+
+          // Check for HSTS header
+          const hstsHeader = response.headers['strict-transport-security'];
+          if (!hstsHeader) {
+            test.passed = false;
+            test.vulnerability = {
+              type: 'Missing HSTS Header',
+              severity: 'medium',
+              description: 'HTTPS endpoint missing Strict-Transport-Security header',
+              evidence: 'No HSTS header found in response',
+              remediation: 'Add Strict-Transport-Security header with max-age of at least 31536000 seconds',
+              cwe: 'CWE-523',
+              owasp: 'A05:2021 - Security Misconfiguration'
+            };
+            test.message = 'HTTPS used but HSTS header missing';
+          } else {
+            test.message = 'HTTPS with HSTS properly configured';
+          }
+        } catch (error) {
+          if (error.code === 'CERT_HAS_EXPIRED' || error.code === 'DEPTH_ZERO_SELF_SIGNED_CERT') {
+            test.passed = false;
+            test.vulnerability = {
+              type: 'Invalid SSL Certificate',
+              severity: 'critical',
+              description: 'SSL certificate is invalid or self-signed',
+              evidence: error.message,
+              remediation: 'Use a valid SSL certificate from a trusted Certificate Authority',
+              cwe: 'CWE-295',
+              owasp: 'A02:2021 - Cryptographic Failures'
+            };
+            test.message = 'Invalid SSL certificate detected';
+          }
+        }
+      }
+    } catch (error) {
+      test.message = `Test failed: ${error.message}`;
+    }
+
+    tests.push(test);
+    return tests;
+  }
+
+  /**
+   * Test Sensitive Data Exposure
+   */
+  async testSensitiveDataExposure(url, method, headers, body) {
+    const tests = [];
+
+    try {
+      const response = await axios({
+        url,
+        method,
+        headers,
+        data: body,
+        timeout: this.timeout,
+        validateStatus: () => true
+      });
+
+      const responseText = typeof response.data === 'string' ? response.data : JSON.stringify(response.data);
+
+      // Patterns for sensitive data
+      const sensitivePatterns = [
+        { name: 'API Keys', pattern: /[a-zA-Z0-9_-]{32,}/, severity: 'critical' },
+        { name: 'JWT Tokens', pattern: /eyJ[a-zA-Z0-9_-]+\.eyJ[a-zA-Z0-9_-]+\.[a-zA-Z0-9_-]+/, severity: 'critical' },
+        { name: 'Email Addresses', pattern: /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/, severity: 'medium' },
+        { name: 'Credit Card Numbers', pattern: /\b\d{4}[\s-]?\d{4}[\s-]?\d{4}[\s-]?\d{4}\b/, severity: 'critical' },
+        { name: 'SSN', pattern: /\b\d{3}-\d{2}-\d{4}\b/, severity: 'critical' },
+        { name: 'Private Keys', pattern: /-----BEGIN (RSA |EC |DSA )?PRIVATE KEY-----/, severity: 'critical' },
+        { name: 'AWS Keys', pattern: /AKIA[0-9A-Z]{16}/, severity: 'critical' },
+        { name: 'Passwords in Response', pattern: /"password"\s*:\s*"[^"]+"/i, severity: 'critical' },
+        { name: 'Database Connection Strings', pattern: /(mongodb|mysql|postgresql):\/\/[^\s]+/, severity: 'high' }
+      ];
+
+      for (const { name, pattern, severity } of sensitivePatterns) {
+        const test = {
+          name: `Sensitive Data Exposure: ${name}`,
+          category: 'data_exposure',
+          passed: true,
+          message: ''
+        };
+
+        if (pattern.test(responseText)) {
+          test.passed = false;
+          test.vulnerability = {
+            type: 'Sensitive Data Exposure',
+            severity,
+            description: `Response may contain ${name}`,
+            evidence: `Pattern matching ${name} found in response`,
+            remediation: 'Remove sensitive data from API responses. Use data masking or filtering.',
+            cwe: 'CWE-200',
+            owasp: 'A02:2021 - Cryptographic Failures'
+          };
+          test.message = `Potential ${name} exposure detected`;
+        } else {
+          test.message = `No ${name} exposure detected`;
+        }
+
+        tests.push(test);
+      }
+
+      // Check for verbose error messages
+      const errorTest = {
+        name: 'Verbose Error Messages',
+        category: 'data_exposure',
+        passed: true,
+        message: ''
+      };
+
+      const errorIndicators = ['stack trace', 'at Object.', 'at Function.', 'at Module.', 'Error:', 'Exception:'];
+      const hasVerboseError = errorIndicators.some(ind => responseText.includes(ind));
+
+      if (hasVerboseError && response.status >= 400) {
+        errorTest.passed = false;
+        errorTest.vulnerability = {
+          type: 'Information Disclosure',
+          severity: 'medium',
+          description: 'Error responses contain verbose technical details',
+          evidence: 'Stack traces or detailed error messages found in response',
+          remediation: 'Use generic error messages in production. Log detailed errors server-side only.',
+          cwe: 'CWE-209',
+          owasp: 'A05:2021 - Security Misconfiguration'
+        };
+        errorTest.message = 'Verbose error messages detected';
+      } else {
+        errorTest.message = 'No verbose error messages detected';
+      }
+
+      tests.push(errorTest);
+
+    } catch (error) {
+      logger.error(`Sensitive data exposure test failed: ${error.message}`);
+    }
+
+    return tests;
+  }
+
+  /**
+   * Test Broken Access Control
+   */
+  async testBrokenAccessControl(url, method, headers, body) {
+    const tests = [];
+
+    // Test 1: IDOR (Insecure Direct Object Reference)
+    const idorTest = {
+      name: 'IDOR Test',
+      category: 'access_control',
+      passed: true,
+      message: ''
+    };
+
+    try {
+      // Check if URL contains numeric IDs
+      const idPattern = /\/(\d+)(?:\/|$)/;
+      const match = url.match(idPattern);
+
+      if (match) {
+        const originalId = match[1];
+        const testId = parseInt(originalId) + 1;
+        const testUrl = url.replace(idPattern, `/${testId}/`);
+
+        const response = await axios({
+          url: testUrl,
+          method,
+          headers,
+          data: body,
+          timeout: this.timeout,
+          validateStatus: () => true
+        });
+
+        if (response.status === 200) {
+          idorTest.passed = false;
+          idorTest.vulnerability = {
+            type: 'Insecure Direct Object Reference (IDOR)',
+            severity: 'high',
+            description: 'Endpoint may be vulnerable to IDOR attacks',
+            evidence: `Accessing resource with ID ${testId} succeeded without proper authorization`,
+            remediation: 'Implement proper authorization checks. Verify user has permission to access requested resources.',
+            cwe: 'CWE-639',
+            owasp: 'A01:2021 - Broken Access Control'
+          };
+          idorTest.message = 'Potential IDOR vulnerability detected';
+        } else {
+          idorTest.message = 'No IDOR vulnerability detected';
+        }
+      } else {
+        idorTest.message = 'No numeric ID found in URL to test';
+      }
+    } catch (error) {
+      idorTest.message = `Test failed: ${error.message}`;
+    }
+
+    tests.push(idorTest);
+
+    // Test 2: HTTP Method Override
+    const methodOverrideTest = {
+      name: 'HTTP Method Override Test',
+      category: 'access_control',
+      passed: true,
+      message: ''
+    };
+
+    try {
+      const overrideHeaders = {
+        ...headers,
+        'X-HTTP-Method-Override': 'DELETE'
+      };
+
+      const response = await axios({
+        url,
+        method: 'POST',
+        headers: overrideHeaders,
+        data: body,
+        timeout: this.timeout,
+        validateStatus: () => true
+      });
+
+      if (response.status === 200 || response.status === 204) {
+        methodOverrideTest.passed = false;
+        methodOverrideTest.vulnerability = {
+          type: 'HTTP Method Override Vulnerability',
+          severity: 'high',
+          description: 'Server accepts X-HTTP-Method-Override header',
+          evidence: 'POST request with X-HTTP-Method-Override: DELETE was processed',
+          remediation: 'Disable HTTP method override or implement strict validation',
+          cwe: 'CWE-650',
+          owasp: 'A01:2021 - Broken Access Control'
+        };
+        methodOverrideTest.message = 'HTTP method override vulnerability detected';
+      } else {
+        methodOverrideTest.message = 'No HTTP method override vulnerability detected';
+      }
+    } catch (error) {
+      methodOverrideTest.message = `Test failed: ${error.message}`;
+    }
+
+    tests.push(methodOverrideTest);
+
+    // Test 3: Path Traversal
+    const pathTraversalTest = {
+      name: 'Path Traversal Test',
+      category: 'access_control',
+      passed: true,
+      message: ''
+    };
+
+    try {
+      const traversalPayloads = ['../../../etc/passwd', '..\\..\\..\\windows\\system32\\config\\sam'];
+      
+      for (const payload of traversalPayloads) {
+        const testUrl = this.injectPayload(url, payload);
+        const response = await axios({
+          url: testUrl,
+          method,
+          headers,
+          data: body,
+          timeout: this.timeout,
+          validateStatus: () => true
+        });
+
+        const responseText = typeof response.data === 'string' ? response.data : JSON.stringify(response.data);
+        
+        if (responseText.includes('root:') || responseText.includes('[boot loader]')) {
+          pathTraversalTest.passed = false;
+          pathTraversalTest.vulnerability = {
+            type: 'Path Traversal',
+            severity: 'critical',
+            description: 'Endpoint vulnerable to path traversal attacks',
+            evidence: `Payload "${payload}" accessed system files`,
+            remediation: 'Validate and sanitize file paths. Use whitelist of allowed files.',
+            cwe: 'CWE-22',
+            owasp: 'A01:2021 - Broken Access Control'
+          };
+          pathTraversalTest.message = 'Path traversal vulnerability detected';
+          break;
+        }
+      }
+
+      if (pathTraversalTest.passed) {
+        pathTraversalTest.message = 'No path traversal vulnerability detected';
+      }
+    } catch (error) {
+      pathTraversalTest.message = `Test failed: ${error.message}`;
+    }
+
+    tests.push(pathTraversalTest);
+
+    return tests;
+  }
+
+  /**
    * Inject payload into URL
    */
   injectPayload(url, payload) {
-    const urlObj = new URL(url);
-    urlObj.searchParams.set('test', payload);
-    return urlObj.toString();
+    try {
+      const urlObj = new URL(url);
+      urlObj.searchParams.set('test', payload);
+      return urlObj.toString();
+    } catch (error) {
+      // If URL parsing fails, return original URL with query string appended
+      const separator = url.includes('?') ? '&' : '?';
+      return `${url}${separator}test=${encodeURIComponent(payload)}`;
+    }
   }
 }
 

@@ -22,6 +22,8 @@ import apiKeysRoutes from './routes/apiKeys.js';
 import proxyManagementRoutes from './routes/proxy.js';
 import scannerRoutes from './routes/scanner.js';
 import monitoringRoutes from './routes/monitoring.js';
+import vulnerabilityRoutes from './routes/vulnerability.js';
+import testRoutes from './routes/test.js';
 
 // Import proxy middleware
 import { createProxy, validateProxyTarget, logProxyRequest } from './middleware/proxy.js';
@@ -46,10 +48,10 @@ app.use(express.urlencoded({ extended: true }));
 app.use(requestLogger);
 
 // Apply NoSQL protection globally (before security middleware)
-// Exclude scanner routes as they need to handle URLs with special characters
+// Exclude scanner and vulnerability routes as they need to handle URLs with special characters
 app.use((req, res, next) => {
-  if (req.path.startsWith('/api/scanner')) {
-    // Skip strict NoSQL protection for scanner routes
+  if (req.path.startsWith('/api/scanner') || req.path.startsWith('/api/vulnerability')) {
+    // Skip strict NoSQL protection for scanner and vulnerability routes
     return next();
   }
   
@@ -63,10 +65,10 @@ app.use((req, res, next) => {
   })(req, res, next);
 });
 
-// Apply security middleware but skip scanner routes
+// Apply security middleware but skip scanner and vulnerability routes
 app.use((req, res, next) => {
-  if (req.path.startsWith('/api/scanner')) {
-    // Skip security middleware for scanner routes (URLs need special chars)
+  if (req.path.startsWith('/api/scanner') || req.path.startsWith('/api/vulnerability')) {
+    // Skip security middleware for scanner and vulnerability routes (URLs need special chars)
     return next();
   }
   securityMiddleware.middleware()(req, res, next);
@@ -108,6 +110,8 @@ app.use('/api/admin', adminRoutes);
 app.use('/api/proxy', proxyManagementRoutes);
 app.use('/api/scanner', scannerRoutes);
 app.use('/api/monitoring', monitoringRoutes);
+app.use('/api/vulnerability', vulnerabilityRoutes);
+app.use('/api/test', testRoutes);
 
 // Proxy route - forwards requests to target API
 app.use('/proxy',
