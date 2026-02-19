@@ -18,6 +18,7 @@ import { nosqlProtection } from './middleware/nosqlProtection.js';
 import adminRoutes from './routes/admin.js';
 import authRoutes from './routes/auth.js';
 import proxyManagementRoutes from './routes/proxy.js';
+import scannerRoutes from './routes/scanner.js';
 
 // Import proxy middleware
 import { createProxy, validateProxyTarget, logProxyRequest } from './middleware/proxy.js';
@@ -39,16 +40,31 @@ app.use(express.urlencoded({ extended: true }));
 app.use(requestLogger);
 
 // Apply NoSQL protection globally (before security middleware)
-app.use(nosqlProtection({
-  sanitizeBody: true,
-  sanitizeQuery: true,
-  sanitizeParams: true,
-  allowOperators: false,
-  strictMode: true,
-  blockOnDanger: true
-}));
+// Exclude scanner routes as they need to handle URLs with special characters
+app.use((req, res, next) => {
+  if (req.path.startsWith('/api/scanner')) {
+    // Skip strict NoSQL protection for scanner routes
+    return next();
+  }
+  
+  nosqlProtection({
+    sanitizeBody: true,
+    sanitizeQuery: true,
+    sanitizeParams: true,
+    allowOperators: false,
+    strictMode: true,
+    blockOnDanger: true
+  })(req, res, next);
+});
 
-app.use(securityMiddleware.middleware());
+// Apply security middleware but skip scanner routes
+app.use((req, res, next) => {
+  if (req.path.startsWith('/api/scanner')) {
+    // Skip security middleware for scanner routes (URLs need special chars)
+    return next();
+  }
+  securityMiddleware.middleware()(req, res, next);
+});
 
 // Store Socket.IO instance on app for middleware access
 app.set('io', io);
@@ -78,6 +94,7 @@ app.get('/health', (req, res) => {
 app.use('/api/auth', authRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/proxy', proxyManagementRoutes);
+app.use('/api/scanner', scannerRoutes);
 
 // Proxy route - forwards requests to target API
 app.use('/proxy',

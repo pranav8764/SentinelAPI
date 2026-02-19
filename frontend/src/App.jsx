@@ -2,6 +2,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { useState, useEffect } from 'react';
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
+import Scanner from './pages/Scanner';
 import Logs from './pages/Logs';
 import Settings from './pages/Settings';
 import { authAPI } from './services/api';
@@ -59,6 +60,10 @@ function App() {
         <Route
           path="/"
           element={user ? <Dashboard user={user} onLogout={handleLogout} /> : <Navigate to="/login" />}
+        />
+        <Route
+          path="/scanner"
+          element={user ? <Scanner user={user} onLogout={handleLogout} /> : <Navigate to="/login" />}
         />
         <Route
           path="/logs"

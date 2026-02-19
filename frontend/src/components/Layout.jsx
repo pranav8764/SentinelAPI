@@ -5,6 +5,7 @@ function Layout({ children, user, onLogout }) {
 
   const navigation = [
     { name: 'Dashboard', path: '/', icon: '📊' },
+    { name: 'Scanner', path: '/scanner', icon: '🔍' },
     { name: 'Logs', path: '/logs', icon: '📋' },
     { name: 'Settings', path: '/settings', icon: '⚙️' },
   ];
