@@ -95,6 +95,10 @@ const securityConfigSchema = new mongoose.Schema({
       type: Number,
       default: 900000 // 15 minutes
     },
+    max: {
+      type: Number,
+      default: 100
+    },
     maxRequests: {
       type: Number,
       default: 100

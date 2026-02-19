@@ -20,6 +20,7 @@ function Scanner({ user, onLogout }) {
 
   const [scanning, setScanning] = useState(false);
   const [results, setResults] = useState(null);
+  const [scanId, setScanId] = useState(null);
   const [error, setError] = useState('');
 
   const handleScan = async (e) => {
@@ -60,6 +61,7 @@ function Scanner({ user, onLogout }) {
       });
 
       setResults(response.data.results);
+      setScanId(response.data.scanId);
     } catch (err) {
       const errorMessage = err.response?.data?.error || err.response?.data?.message || err.message || 'Scan failed. Please try again.';
       const errorDetails = err.response?.data?.details ? ` (${err.response.data.details})` : '';
@@ -77,6 +79,27 @@ function Scanner({ user, onLogout }) {
       low: 'text-blue-400 bg-blue-500/10 border-blue-500/50'
     };
     return colors[severity] || colors.low;
+  };
+
+  const downloadReport = async (format) => {
+    if (!scanId) return;
+    
+    try {
+      const response = await api.get(`/scanner/report/${scanId}/${format}`, {
+        responseType: 'blob'
+      });
+      
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `security-report-${scanId}.${format}`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (err) {
+      setError(`Failed to download ${format.toUpperCase()} report: ${err.message}`);
+    }
   };
 
   return (
@@ -279,7 +302,29 @@ function Scanner({ user, onLogout }) {
           <div className="space-y-6">
             {/* Summary */}
             <div className="bg-slate-800 rounded-xl border border-slate-700 p-6">
-              <h2 className="text-xl font-bold text-white mb-4">Scan Summary</h2>
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-xl font-bold text-white">Scan Summary</h2>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => downloadReport('json')}
+                    className="px-4 py-2 bg-slate-700 hover:bg-slate-600 text-white rounded-lg text-sm font-medium transition-colors flex items-center gap-2"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                    Export JSON
+                  </button>
+                  <button
+                    onClick={() => downloadReport('html')}
+                    className="px-4 py-2 bg-gradient-to-r from-cyan-500 to-indigo-500 hover:from-cyan-600 hover:to-indigo-600 text-white rounded-lg text-sm font-medium transition-colors flex items-center gap-2"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                    Export HTML
+                  </button>
+                </div>
+              </div>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 <div className="bg-slate-700/50 rounded-lg p-4">
                   <div className="text-slate-400 text-sm">Response Time</div>

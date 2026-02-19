@@ -1,6 +1,7 @@
 import express from 'express';
 import AdminUser from '../models/AdminUser.js';
 import { generateToken, authenticate } from '../middleware/auth.js';
+import { authLimiter } from '../middleware/rateLimit.js';
 import { nosqlProtection, validateUserInput } from '../middleware/nosqlProtection.js';
 import logger from '../utils/logger.js';
 
@@ -16,7 +17,7 @@ router.use(nosqlProtection({
 }));
 
 // Login
-router.post('/login', async (req, res) => {
+router.post('/login', authLimiter, async (req, res) => {
   try {
     // Validate and sanitize inputs
     const username = validateUserInput(req.body.username, 'string');
@@ -99,7 +100,7 @@ router.post('/login', async (req, res) => {
 });
 
 // Register (only for initial setup or admin creation)
-router.post('/register', async (req, res) => {
+router.post('/register', authLimiter, async (req, res) => {
   try {
     // Validate and sanitize inputs
     const username = validateUserInput(req.body.username, 'string');

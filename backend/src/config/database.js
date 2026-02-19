@@ -7,7 +7,7 @@ class Database {
 
   async connect() {
     try {
-      const mongoUri = process.env.MONGODB_URI || 'mongodb://localhost:27017/sentinel';
+      const mongoUri = process.env.MONGODB_URI || 'mongodb://localhost:27017/sentinelapi';
       
       this.connection = await mongoose.connect(mongoUri);
 

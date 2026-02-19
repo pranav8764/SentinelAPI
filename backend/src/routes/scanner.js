@@ -3,6 +3,8 @@ import scanner from '../services/scanner.js';
 import ScanResult from '../models/ScanResult.js';
 import { authenticate } from '../middleware/auth.js';
 import logger from '../utils/logger.js';
+import { scannerLimiter } from '../middleware/rateLimit.js';
+import reportGenerator from '../services/reportGenerator.js';
 
 const router = express.Router();
 
@@ -16,14 +18,17 @@ router.use(authenticate);
  * POST /api/scanner/scan
  * Scan a single endpoint
  */
-router.post('/scan', async (req, res) => {
+router.post('/scan', scannerLimiter, async (req, res) => {
   try {
     // Decode HTML entities in the URL (middleware is encoding slashes)
     let url = req.body.url;
     
     if (url) {
-      // Decode HTML entities like #x2F back to /
-      url = url.replace(/#x2F/g, '/').replace(/#x3A/g, ':');
+      // Decode HTML entities like &#x2F; back to /
+      url = url
+        .replace(/&#x2F;|#x2F/gi, '/')
+        .replace(/&#x3A;|#x3A/gi, ':')
+        .replace(/&amp;/gi, '&');
     }
 
     const {
@@ -244,6 +249,76 @@ router.get('/stats', async (req, res) => {
     res.status(500).json({
       error: 'Failed to fetch statistics',
       code: 'STATS_ERROR'
+    });
+  }
+});
+
+/**
+ * GET /api/scanner/report/:id/json
+ * Generate and download JSON report for a scan
+ */
+router.get('/report/:id/json', async (req, res) => {
+  try {
+    const scan = await ScanResult.findOne({
+      _id: req.params.id,
+      userId: req.user._id
+    }).lean();
+
+    if (!scan) {
+      return res.status(404).json({
+        error: 'Scan result not found',
+        code: 'NOT_FOUND'
+      });
+    }
+
+    const report = reportGenerator.generateJSON(scan);
+
+    res.setHeader('Content-Type', 'application/json');
+    res.setHeader('Content-Disposition', `attachment; filename="security-report-${req.params.id}.json"`);
+    res.json(report);
+
+    logger.info(`JSON report generated for scan ${req.params.id} by user ${req.user.username}`);
+
+  } catch (error) {
+    logger.error(`Error generating JSON report: ${error.message}`);
+    res.status(500).json({
+      error: 'Failed to generate report',
+      code: 'REPORT_ERROR'
+    });
+  }
+});
+
+/**
+ * GET /api/scanner/report/:id/html
+ * Generate and download HTML report for a scan
+ */
+router.get('/report/:id/html', async (req, res) => {
+  try {
+    const scan = await ScanResult.findOne({
+      _id: req.params.id,
+      userId: req.user._id
+    }).lean();
+
+    if (!scan) {
+      return res.status(404).json({
+        error: 'Scan result not found',
+        code: 'NOT_FOUND'
+      });
+    }
+
+    const report = reportGenerator.generateHTML(scan);
+
+    res.setHeader('Content-Type', 'text/html');
+    res.setHeader('Content-Disposition', `attachment; filename="security-report-${req.params.id}.html"`);
+    res.send(report);
+
+    logger.info(`HTML report generated for scan ${req.params.id} by user ${req.user.username}`);
+
+  } catch (error) {
+    logger.error(`Error generating HTML report: ${error.message}`);
+    res.status(500).json({
+      error: 'Failed to generate report',
+      code: 'REPORT_ERROR'
     });
   }
 });

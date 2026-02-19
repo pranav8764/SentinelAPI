@@ -2,7 +2,7 @@
 
 > **A comprehensive API security testing and vulnerability detection platform built for developers who care about security.**
 
-SentinelAPI helps you identify and fix API vulnerabilities before they become security incidents. Test individual endpoints, scan entire API collections, and monitor traffic in real-time with automated threat detection.
+SentinelAPI helps you identify and fix API vulnerabilities before they become security incidents. Test individual endpoints and monitor traffic in real-time with automated threat detection.
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Node.js Version](https://img.shields.io/badge/node-%3E%3D18.0.0-brightgreen)](https://nodejs.org)
@@ -12,7 +12,7 @@ SentinelAPI helps you identify and fix API vulnerabilities before they become se
 
 ## 🎯 What is SentinelAPI?
 
-SentinelAPI is a **security-first API testing platform** that combines the functionality of Postman with the security scanning capabilities of OWASP ZAP and Burp Suite - but simpler, more focused, and developer-friendly.
+SentinelAPI is a **security-first API testing platform** that provides comprehensive security scanning capabilities similar to OWASP ZAP and Burp Suite - but simpler, more focused, and developer-friendly.
 
 ### The Problem We Solve
 
@@ -20,16 +20,15 @@ Modern web applications rely heavily on APIs, but securing them is complex:
 - 🔴 **Authentication vulnerabilities** are common but hard to detect manually
 - 🔴 **Manual security testing** is tedious, error-prone, and doesn't scale
 - 🔴 **Lack of actionable guidance** - tools find issues but don't explain how to fix them
-- 🔴 **Collection testing gaps** - testing entire API suites requires significant manual effort
 - 🔴 **Inconsistent security practices** lead to vulnerabilities slipping into production
 
 ### Our Solution
 
-✅ **Automated Security Testing** - Scan endpoints or entire collections with one click  
+✅ **Automated Security Testing** - Scan endpoints with comprehensive vulnerability checks  
 ✅ **Deep Authentication Analysis** - Specialized testing for OAuth 2.0, JWT, API keys, and sessions  
-✅ **Import & Test Collections** - Native support for Postman, OpenAPI/Swagger, and Insomnia  
 ✅ **Actionable Remediation** - Every vulnerability comes with clear fix instructions and code examples  
 ✅ **Real-Time Monitoring** - Live traffic analysis with automatic threat blocking  
+✅ **Detailed Reports** - Export comprehensive security reports in JSON and HTML formats  
 ✅ **Developer-Friendly** - Beautiful UI, clear reports, and seamless workflow integration
 
 ---
@@ -42,15 +41,6 @@ Modern web applications rely heavily on APIs, but securing them is complex:
 - Real-time scan progress with detailed feedback
 - Support for all HTTP methods (GET, POST, PUT, DELETE, PATCH, etc.)
 - Instant vulnerability reports with severity ratings
-
-### 📦 API Collection Testing
-- **Import Postman collections** (JSON format)
-- **Import OpenAPI/Swagger specifications** (YAML/JSON)
-- **Import Insomnia collections**
-- Batch scan all endpoints in a collection
-- Preserve authentication configurations from imports
-- Test endpoint relationships and dependencies
-- Select specific endpoints or scan entire collections
 
 ### 🔐 Authentication Testing
 
@@ -115,10 +105,11 @@ Real-time visibility into API security with WebSocket-powered updates:
 - Comprehensive vulnerability lists with severity indicators
 - Detailed descriptions with impact analysis
 - Step-by-step remediation instructions
-- Code examples for fixes in multiple languages
-- Export reports as PDF or JSON
-- Shareable report links
-- Historical scan comparison
+- Code examples and security references (CWE, OWASP)
+- Export reports as JSON or HTML
+- Professional HTML reports with visual charts and styling
+- Risk score calculation based on vulnerability severity
+- Automated security recommendations
 
 ### 📈 Real-Time Dashboard
 
@@ -155,13 +146,12 @@ Real-time visibility into API security with WebSocket-powered updates:
 - **Rate Limiting:** express-rate-limit
 - **Logging:** Winston
 
-**Frontend** *(Coming Soon)*
+**Frontend**
 - **Framework:** React 18
 - **Build Tool:** Vite
 - **Styling:** Tailwind CSS
-- **State Management:** Context API / Zustand
+- **State Management:** React Hooks
 - **Real-time:** Socket.io-client
-- **Charts:** Chart.js / Recharts
 - **HTTP Client:** Axios
 
 **DevOps**
@@ -198,13 +188,17 @@ Real-time visibility into API security with WebSocket-powered updates:
 │  │   Scanner    │  │   Logger     │  │  WebSocket   │  │
 │  │   Service    │  │   Service    │  │   Service    │  │
 │  └──────────────┘  └──────────────┘  └──────────────┘  │
+│  ┌──────────────┐                                       │
+│  │   Report     │                                       │
+│  │  Generator   │                                       │
+│  └──────────────┘                                       │
 └────────────────────┬────────────────────────────────────┘
                      │
                      ▼
 ┌─────────────────────────────────────────────────────────┐
 │                    MongoDB Database                      │
 │  • Request Logs    • Security Config    • Scan Results  │
-│  • Admin Users     • Collections        • Analytics     │
+│  • Admin Users     • API Keys           • Analytics     │
 └─────────────────────────────────────────────────────────┘
 ```
 
@@ -289,6 +283,6 @@ Real-time visibility into API security with WebSocket-powered updates:
 ---
 
 
-*Last Updated: January 16, 2026*  
-*Version: 1.0.0-alpha*  
-*Status: In Active Development 🚧*
+*Last Updated: February 19, 2026*  
+*Version: 1.0.0*  
+*Status: Working ✅*

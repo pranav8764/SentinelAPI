@@ -163,7 +163,7 @@ export const logProxyRequest = async (req, res, next) => {
     // Create request log entry
     const requestLog = new RequestLog({
       method: req.method,
-      path: req.originalUrl,
+      url: req.originalUrl,
       ip: req.ip || req.connection.remoteAddress,
       headers: req.headers,
       body: req.body,
