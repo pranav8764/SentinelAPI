@@ -316,7 +316,7 @@ function sanitizeNoSQL(input) {
   ];
   
   mongoOperators.forEach(operator => {
-    const regex = new RegExp(`\\${operator.replace('$', '\\$')}`, 'gi');
+    const regex = new RegExp(operator.replace(/\$/g, '\\$'), 'gi');
     sanitized = sanitized.replace(regex, `[${operator}]`);
   });
   

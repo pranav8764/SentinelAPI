@@ -221,7 +221,11 @@ export function nosqlProtection(options = {}) {
         }
         
         if (!blocked) {
-          req.query = sanitizeValue(req.query, { allowOperators, strictMode });
+          // Express 5: req.query is getter-only, plain assignment throws
+          Object.defineProperty(req, 'query', {
+            value: sanitizeValue(req.query, { allowOperators, strictMode }),
+            writable: true, configurable: true, enumerable: true
+          });
           req.sanitizedQuery = true;
         }
       }
