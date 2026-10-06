@@ -271,12 +271,24 @@ Real-time visibility into API security with WebSocket-powered updates:
 
 ---
 
+## 🧪 Testing
+
+```bash
+cd backend
+npm test                # full Jest suite
+npm run test:security   # detection patterns + sanitizers (true positives and benign inputs)
+npm run test:nosql      # NoSQL-injection middleware via supertest, no MongoDB needed
+```
+
+CI (GitHub Actions) runs lint and the test suite on every push and pull request. Known gap: the classic `' OR '1'='1` tautology is not yet detected; it is tracked as a `test.failing` case.
+
+---
+
 ## 📈 Performance
 
-- **Response Time:** < 100ms for most endpoints
-- **Proxy Overhead:** < 50ms additional latency
-- **Concurrent Requests:** Supports 1000+ concurrent connections
-- **Database:** Optimized indexes for fast queries
+> Latency and concurrency have not been formally benchmarked yet; no numbers are claimed here until a reproducible load test exists.
+
+- **Database:** Indexes on request-log and scan-result queries
 - **Rate Limiting:** In-memory store for minimal overhead
 - **WebSocket:** Real-time updates with minimal bandwidth
 
